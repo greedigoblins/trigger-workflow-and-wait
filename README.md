@@ -1,128 +1,203 @@
-# Trigger Workflow and Wait
+# Trigger Workflow and Wait GitHub Action
 
-Github Action for trigger a workflow from another workflow. The action then waits for a response.
+This GitHub Action allows you to trigger a workflow in a specified repository and wait for its completion. It is useful for orchestrating complex workflows that depend on the successful execution of other workflows.
 
-**When would you use it?**
+[![CI](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/ci.yml/badge.svg)](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/ci.yml)
+[![Test Action](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/test-action.yml/badge.svg)](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/test-action.yml)
 
-When deploying an app you may need to deploy additional services, this Github Action helps with that.
+## Features
 
+- ✅ Trigger workflows in any repository you have access to
+- ✅ Wait for triggered workflows to complete
+- ✅ Configurable wait intervals and timeouts
+- ✅ Proper error handling and failure propagation
+- ✅ Optimized bundle size using `@vercel/ncc`
+- ✅ Comprehensive test coverage
 
-## Arguments
+## Usage
 
-| Argument Name            | Required   | Default     | Description           |
-| ---------------------    | ---------- | ----------- | --------------------- |
-| `owner`                  | True       | N/A         | The owner of the repository where the workflow is contained. |
-| `repo`                   | True       | N/A         | The repository where the workflow is contained. |
-| `github_token`           | True       | N/A         | The Github access token with access to the repository. Its recommended you put it under secrets. |
-| `workflow_file_name`     | True       | N/A         | The reference point. For example, you could use main.yml. |
-| `github_user`            | False      | N/A         | The name of the github user whose access token is being used to trigger the workflow. |
-| `ref`                    | False      | main        | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
-| `wait_interval`          | False      | 10          | The number of seconds delay between checking for result of run. |
-| `client_payload`         | False      | `{}`        | Payload to pass to the workflow, must be a JSON string |
-| `propagate_failure`      | False      | `true`      | Fail current job if downstream job fails. |
-| `trigger_workflow`       | False      | `true`      | Trigger the specified workflow. |
-| `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
-| `comment_downstream_url` | False      | ``          | A comments API URL to comment the current downstream job URL to. Default: no comment |
-| `comment_github_token`   | False      | `${{github.token}}`          | token used for pull_request comments |
+### Basic Usage
 
+```yaml
+name: Trigger Workflow and Wait
+
+on:
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger another workflow
+        uses: greedigoblins/trigger-workflow-and-wait@v1
+        with:
+          owner: 'your-github-username'
+          repo: 'your-repo-name'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow_file_name: 'your-workflow-file.yml'
+```
+
+### Advanced Usage
+
+```yaml
+name: Complex Workflow Orchestration
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  trigger-and-wait:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deployment workflow
+        uses: greedigoblins/trigger-workflow-and-wait@v1
+        with:
+          owner: 'my-org'
+          repo: 'deployment-repo'
+          github_token: ${{ secrets.DEPLOY_TOKEN }}
+          workflow_file_name: 'deploy.yml'
+          wait_interval: '30'           # Check every 30 seconds
+          propagate_failure: 'true'     # Fail this job if triggered workflow fails
+          trigger_workflow: 'true'      # Actually trigger the workflow
+          wait_workflow: 'true'         # Wait for completion
+```
+
+### Inputs
+
+| Input | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `owner` | The owner of the repository | ✅ | |
+| `repo` | The name of the repository | ✅ | |
+| `github_token` | GitHub token with repo access | ✅ | |
+| `workflow_file_name` | The name of the workflow file to trigger | ✅ | |
+| `wait_interval` | The interval to wait between checks (in seconds) | ❌ | `10` |
+| `propagate_failure` | Whether to propagate failure to the upstream job | ❌ | `true` |
+| `trigger_workflow` | Whether to trigger the workflow | ❌ | `true` |
+| `wait_workflow` | Whether to wait for the workflow to finish | ❌ | `true` |
+
+### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `workflow_id` | The ID of the triggered workflow |
+| `workflow_url` | The URL of the triggered workflow |
+
+## Publishing and Releases
+
+This action uses automated releases with GitHub Actions:
+
+### Creating a Release
+
+1. **Create a new tag** following semantic versioning:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. **Create a GitHub Release** from the tag - this will automatically:
+   - Run tests and build the action
+   - Update the major version tag (e.g., `v1`)
+   - Publish to the GitHub Actions Marketplace
+
+### Version Tags
+
+- **Specific versions**: `v1.0.0`, `v1.1.0`, `v2.0.0`
+- **Major version tags**: `v1`, `v2` (automatically updated)
+
+Users can reference either:
+- `greedigoblins/trigger-workflow-and-wait@v1` (always latest v1.x.x)
+- `greedigoblins/trigger-workflow-and-wait@v1.0.0` (specific version)
+        with:
+          owner: your-github-username
+          repo: your-repo-name
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow_file_name: your-workflow-file.yml
+          wait_workflow: true
+          propagate_failure: true
+```
+
+## Inputs
+
+- `owner`: **Required**. The owner of the repository where the workflow is located.
+- `repo`: **Required**. The name of the repository where the workflow is located.
+- `github_token`: **Required**. A GitHub token with permissions to trigger workflows.
+- `workflow_file_name`: **Required**. The name of the workflow file to trigger.
+- `wait_workflow`: **Optional**. Set to `true` to wait for the triggered workflow to finish. Default is `true`.
+- `propagate_failure`: **Optional**. Set to `true` to propagate the failure of the triggered workflow to the calling workflow. Default is `true`.
+- `wait_interval`: **Optional**. The interval in seconds to wait between checks for the workflow status. Default is `10`.
+- `client_payload`: **Optional**. A JSON string containing inputs to pass to the triggered workflow.
+- `ref`: **Optional**. The git reference for the workflow run (branch, tag, or commit SHA). Default is `main`.
+
+## Outputs
+
+- `workflow_id`: The ID of the triggered workflow run.
+- `workflow_url`: The URL of the triggered workflow run.
+- `conclusion`: The conclusion of the workflow run (success, failure, etc.).
+- `status`: The status of the workflow run (completed, in_progress, etc.).
 
 ## Example
 
-### Simple
+Here is an example of how to use this action in a workflow:
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
-  with:
-    owner: keithconvictional
-    repo: myrepo
-    github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
-```
+name: Example Workflow
 
-### All Options
-
-```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
-  with:
-    owner: keithconvictional
-    repo: myrepo
-    github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
-    github_user: github-user
-    workflow_file_name: main.yml
-    ref: release-branch
-    wait_interval: 10
-    client_payload: '{}'
-    propagate_failure: false
-    trigger_workflow: true
-    wait_workflow: true
-```
-
-### Comment the current running workflow URL for a PR
-
-```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
-  with:
-    owner: keithconvictional
-    repo: myrepo
-    github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
-    comment_downstream_url: ${{ github.event.pull_request.comments_url }}
-```
-
-## Testing
-
-You can test out the action locally by cloning the repository to your computer. You can run:
-
-```shell
-INPUT_OWNER="keithconvictional" \
-INPUT_REPO="myrepo" \
-INPUT_GITHUB_TOKEN="<REDACTED>" \
-INPUT_GITHUB_USER="github-user" \
-INPUT_WORKFLOW_FILE_NAME="main.yml" \
-INPUT_REF="release-branch" \
-INPUT_WAIT_INTERVAL=10 \
-INPUT_CLIENT_PAYLOAD='{}' \
-INPUT_PROPAGATE_FAILURE=false \
-INPUT_TRIGGER_WORKFLOW=true \
-INPUT_WAIT_WORKFLOW=true \
-busybox sh entrypoint.sh
-```
-
-You will have to create a Github Personal access token. You can create a test workflow to be executed. In a repository, add a new `main.yml` to `.github/workflows/`. The workflow will be:
-
-```shell
-name: Main
 on:
-  workflow_dispatch
+  push:
+    branches:
+      - main
+
 jobs:
-  build:
+  trigger-workflow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: Pause for 25 seconds
-        run: |
-          sleep 25
+      - name: Trigger another workflow
+        uses: ./trigger-workflow-and-wait
+        with:
+          owner: your-github-username
+          repo: your-repo-name
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow_file_name: your-workflow-file.yml
 ```
 
-You can see the example [here](https://github.com/keithconvictional/trigger-workflow-and-wait-example-repo1/blob/master/.github/workflows/main.yml). For testing a failure case, just add this line after the sleep:
+## Development
 
-```yaml
-...
-- name: Pause for 25 seconds
-  run: |
-    sleep 25
-    echo "For testing failure"
-    exit 1
+This action is built using Node.js and uses `@vercel/ncc` to create a single, minified bundle for optimal performance in GitHub Actions.
+
+### Building
+
+To build the action:
+
+```bash
+npm run build
 ```
 
-## Potential Issues
+This creates a bundled version in the `dist/` directory that includes all dependencies.
 
-### Changes
+### Testing
 
-If you do not want the latest build all of the time, please use a versioned copy of the Github Action. You specify the version after the `@` sign.
+Run the test suite:
 
-```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
-  with:
-    owner: keithconvictional
-    repo: myrepo
-    github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+```bash
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
 ```
+
+### Development Workflow
+
+1. Make changes to the source code in the `src/` directory
+2. Run tests to ensure everything works: `npm test`
+3. Build the action: `npm run build`
+4. Commit both source and built files to the repository
+
+The `dist/index.js` file must be committed to the repository for the action to work properly.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.

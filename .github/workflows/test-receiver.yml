@@ -1,0 +1,74 @@
+name: Test Receiver
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_message:
+        description: 'Test message received'
+        required: false
+        default: 'Default test message'
+      sender_info:
+        description: 'Information about who triggered this'
+        required: false
+
+jobs:
+  receiver-job:
+    runs-on: ubuntu-latest
+    name: Process received trigger
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Display trigger information
+        run: |
+          echo "🎯 Workflow was triggered successfully!"
+          echo "============================================"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Trigger event: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "============================================"
+          
+      - name: Process inputs
+        run: |
+          echo "📝 Processing inputs:"
+          echo "Test message: ${{ github.event.inputs.test_message }}"
+          echo "Sender info: ${{ github.event.inputs.sender_info }}"
+          
+      - name: Simulate some work
+        run: |
+          echo "⚡ Starting simulated work..."
+          sleep 10
+          echo "🔄 Processing data..."
+          sleep 10
+          echo "✅ Work completed successfully!"
+          
+      - name: Set outputs
+        id: results
+        run: |
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "message=Receiver workflow completed successfully" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+          
+      - name: Summary
+        run: |
+          echo "📊 Workflow Summary:"
+          echo "Status: ${{ steps.results.outputs.status }}"
+          echo "Message: ${{ steps.results.outputs.message }}"
+          echo "Completed at: ${{ steps.results.outputs.timestamp }}"
+          echo ""
+          echo "🎉 Test receiver workflow completed!"
+
+  test-failure:
+    runs-on: ubuntu-latest
+    name: Test failure scenario (optional)
+    if: contains(github.event.inputs.test_message, 'fail')
+    
+    steps:
+      - name: Simulate failure
+        run: |
+          echo "💥 Simulating failure scenario..."
+          echo "This job will fail to test error handling"
+          exit 1
