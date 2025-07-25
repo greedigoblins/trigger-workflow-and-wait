@@ -3,7 +3,6 @@
 This GitHub Action allows you to trigger a workflow in a specified repository and wait for its completion. It is useful for orchestrating complex workflows that depend on the successful execution of other workflows.
 
 [![CI](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/ci.yml/badge.svg)](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/ci.yml)
-[![Test Action](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/test-action.yml/badge.svg)](https://github.com/greedigoblins/trigger-workflow-and-wait/actions/workflows/test-action.yml)
 
 ## Features
 
@@ -89,16 +88,12 @@ This action uses automated releases with GitHub Actions:
 
 ### Creating a Release
 
-1. **Create a new tag** following semantic versioning:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
+Create a new tag following semantic versioning then use the publish feature in github.
 
-2. **Create a GitHub Release** from the tag - this will automatically:
-   - Run tests and build the action
-   - Update the major version tag (e.g., `v1`)
-   - Publish to the GitHub Actions Marketplace
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
 
 ### Version Tags
 
@@ -108,14 +103,6 @@ This action uses automated releases with GitHub Actions:
 Users can reference either:
 - `greedigoblins/trigger-workflow-and-wait@v1` (always latest v1.x.x)
 - `greedigoblins/trigger-workflow-and-wait@v1.0.0` (specific version)
-        with:
-          owner: your-github-username
-          repo: your-repo-name
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow_file_name: your-workflow-file.yml
-          wait_workflow: true
-          propagate_failure: true
-```
 
 ## Inputs
 
@@ -191,12 +178,13 @@ npm run test:watch
 
 ### Development Workflow
 
+1. Create a feature branch
 1. Make changes to the source code in the `src/` directory
-2. Run tests to ensure everything works: `npm test`
-3. Build the action: `npm run build`
-4. Commit both source and built files to the repository
-
-The `dist/index.js` file must be committed to the repository for the action to work properly.
+1. Run tests to ensure everything works: `npm test`
+1. Build the action: `npm run build:complete`
+1. Commit both source and built files
+1. Create a PR to `main`
+1. Someone with admin access can publish the package
 
 ## License
 
