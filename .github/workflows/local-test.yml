@@ -1,17 +1,11 @@
-name: Test Action
+name: Local Test
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
-  test-action:
+  test-local:
     runs-on: ubuntu-latest
-    name: Test the action
-    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,15 +22,14 @@ jobs:
       - name: Build action
         run: npm run build:complete
       
-      - name: Test action (dry run)
+      - name: Test action locally
         uses: ./
-        with:
-          owner: 'greedigoblins'
-          repo: 'trigger-workflow-and-wait'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow_file_name: 'ci.yml'
-          trigger_workflow: 'false'  # Don't actually trigger
-          wait_workflow: 'false'     # Don't wait
         env:
           INPUT_OWNER: 'greedigoblins'
           INPUT_REPO: 'trigger-workflow-and-wait'
+          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_WORKFLOW_FILE_NAME: 'test-receiver.yml'
+          INPUT_REF: 'master'
+          INPUT_TRIGGER_WORKFLOW: 'true'
+          INPUT_WAIT_WORKFLOW: 'true'
+

@@ -1,0 +1,12 @@
+# Act configuration file
+# Use medium Ubuntu image for better compatibility
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Set default event
+--defaultbranch master
+
+# Enable verbose logging
+# -v
+
+# Bind the current directory
+--bind

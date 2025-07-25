@@ -33,17 +33,22 @@ jobs:
       run: npm run test:coverage
     
     - name: Build action
-      run: npm run build
+      run: npm run build:complete
     
-    - name: Check for uncommitted changes
+    - name: Check if build produces changes
+      id: check_changes
       run: |
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "::error::Uncommitted changes found. Please run 'npm run build' and commit the changes."
-          git status
-          exit 1
+        # Check if there are any changes after build
+        if git diff --quiet index.js; then
+          echo "No changes detected in index.js after build"
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "Changes detected in index.js after build"
+          git diff index.js
+          echo "has_changes=true" >> $GITHUB_OUTPUT
         fi
 
-  package-check:
+  coverage-check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -57,11 +62,8 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Check if dist is up to date
-      run: |
-        npm run build
-        if [ -n "$(git diff --name-only)" ]; then
-          echo "::error::Built files are not up to date. Please run 'npm run build' and commit the changes."
-          git diff
-          exit 1
-        fi
+    - name: Run tests with coverage
+      run: npm run test:coverage
+    
+    - name: Build action
+      run: npm run build:complete

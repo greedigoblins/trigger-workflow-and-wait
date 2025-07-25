@@ -29,7 +29,7 @@ jobs:
       run: npm test
     
     - name: Build action
-      run: npm run build:complete
+      run: npm run build
     
     - name: Check for changes since last release
       id: check_changes
@@ -63,7 +63,7 @@ jobs:
         git config --local user.name "GitHub Action"
         
         # Add built files
-        git add index.js
+        git add dist/
         
         # Check if there are changes to commit
         if git diff --staged --quiet; then

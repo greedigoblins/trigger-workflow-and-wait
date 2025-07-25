@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 
-# Build output
+# Build output (but keep root index.js)
 dist/
 
 # Test coverage
@@ -31,6 +31,9 @@ pids
 
 # dotenv environment variables file
 .env
+
+# Act local testing
+.secrets
 
 # IDE files
 .vscode/
